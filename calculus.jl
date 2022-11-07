@@ -1,10 +1,17 @@
+##########################################################
 # Calculus
 # File of helper functions numerically approximating derivatives
 # and integrals
 
+# Author: Masen Pitts
+# Last Modified: 11/05/2022 (MM/DD/YYYY)
+# Version: 1.1
+#########################################################
+
+
 # Composite Simpson's Rule.
 # Approximates the integral I = Int(f(x), a < x < b) using
-# Simpson's Rule on n subintervals.
+# Simpson's Rule on "n" subintervals.
 #
 # NOTE: Using this function with n=2 is equivalent to performing
 # a single Simpson's Rule approximation over [a,b]
@@ -34,7 +41,7 @@ end
 
 # Composite Trapezoidal Rule.
 # Approximates the integral I = Int(f(x), a < x < b) using
-# the Trapezoidal Rule on n subintervals.
+# the Trapezoidal Rule on "n" subintervals.
 #
 # NOTE: Using this function with n=1 is equivalent to performing
 # a single Trapezoidal Rule approximation over [a,b]
@@ -58,8 +65,8 @@ end
 # based on Simpson's Rule with n=4 for a maximum of N subintervals
 #
 # The parameter "base" is a boolean value that controls when the 
-# program initializes and when it fails. It always be set to "true"
-# on the user end.
+# program initializes and when it fails. It should always be set to "true"
+# when being called by the user.
 function adaptivequad(f, a, b, tol, N, base=true)
     # Initializes subinterval tracking variable "n" at base iteration
     if base 
@@ -75,9 +82,10 @@ function adaptivequad(f, a, b, tol, N, base=true)
     S = simpson(f, a, b, 2)
     S4 = simpson(f, a, b, 4)
 
-    # Recursively apply method left and right subintervals when 
+    # Recursively apply method to left and right subintervals when 
     # approximations do not meet a defined tolerance
     if abs(S - S4) < 10*tol
+        if base println("\nI = ", S4, "\nSubintervals required: ", n) end
         return S4
     else
         global n += 1
@@ -89,7 +97,7 @@ function adaptivequad(f, a, b, tol, N, base=true)
         # Neatly fail the method if the number of subintervals exceeds
         # the allowed maximum and return a proper value otherwise. 
         # If you want the method to fail AS SOON
-        # as any of the recursive iterations fail replace the code with
+        # as any of the recursive iterations fail, replace the code with
         # the logic below (this will give a much messier error message):
         # if left === nothing || right === nothing
         #     error("\nMethod failed: exceeded N subintervals. N = ", N)
@@ -110,5 +118,4 @@ function adaptivequad(f, a, b, tol, N, base=true)
             end
         end
     end
-
 end

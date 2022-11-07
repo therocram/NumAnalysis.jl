@@ -1,3 +1,14 @@
+##########################################################
+# Root Finder
+# File of helper functions used for finding the roots and
+# fixed points of real functions of one variable
+
+# Author: Masen Pitts
+# Last Modified: 11/05/2022 (MM/DD/YYYY)
+# Version: 1.1
+#########################################################
+
+
 # Bisection Method
 # Implements the bisection method on the interval [a,b]
 # to approximate the root of a function "f" within some tolerance
@@ -5,7 +16,6 @@
 # "printi" is a boolean variable that determines whether
 # the function will print the total number of iterations
 # when it returns a value.
-
 function bisecmethod(f, a, b, tol, N)
     if f(a) == 0
         return a
@@ -55,14 +65,9 @@ end
 # Approximates the fixed point of some function "g" given
 # an inital guess "p0" within a tolerance of "tol" for a 
 # maximum of "N" iterations.
-# "printi" is a boolean variable that determines whether
-# the function will print the total number of iterations
-# when it returns a value.
-
-function fixedpoint(g, p0, tol, N, printi = false)
+function fixedpoint(g, p0, tol, N)
     for i in 1:N
         p = g(p0)
-        # println("(", p0," ", p, ")")
         if p == 0 ? abs(p-p0) < tol : abs(p-p0)/abs(p) < tol
             if printi println("Required Iterations: ", i) end
             return p
@@ -161,7 +166,6 @@ end
 # "falsepos" is a boolean variable that if set to true will 
 # force the algorithm to impement the false position variation 
 # of the secant method.
-
 function secantmethod(f, p0, p1, tol, N, falsepos = false)
     q0 = f(p0)
     q1 = f(p1)
@@ -240,7 +244,6 @@ function steffensen(g, p0, tol, N)
 end
 
 
-
 # Horner's Method
 # Used to quickly evaluate a polynomial with coefficients "a" and
 # its first derivative at the point "x0"
@@ -251,7 +254,6 @@ end
 #
 # Returns a tuple in the form of (P(x0), P'(x0)), where P is the
 # polynomial whose coefficients are given by "a"
-
 function horners(a, x0)
     n = length(a) - 1
 

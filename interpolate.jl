@@ -1,3 +1,13 @@
+##########################################################
+# Interpolate
+# File of helper functions used for creating interpolating
+# polynomials for data sets.
+
+# Author: Masen Pitts
+# Last Modified: 11/05/2022 (MM/DD/YYYY)
+# Version: 1.1
+#########################################################
+
 using Printf
 
 # Neville's Method
@@ -368,49 +378,11 @@ function clampcubicspline(x, f, fp0, fpn)
 end
 
 # Very cool example
-using Plots
-
-duckx = [.9,1.3,1.9,2.1,2.6,3.0,3.9,4.4,4.7,5.0,6.0,7.0,8.0,9.2,10.5,11.3,11.6,12.,12.6,13.,13.3];
-duckf = [1.3,1.5,1.85,2.1,2.6,2.7,2.4,2.15,2.05,2.1,2.25,2.3,2.25,1.95,1.4,0.9,0.7,0.6,0.5,0.4,0.25];
-duck = natcubicspline(duckx, duckf);
-xGrid = 0.9:0.1:13.3; yVals = [duck(x) for x in xGrid];
-plot(xGrid, yVals, xlims=(0,14), ylims=(-6,4))
-plot!(duckx, duckf, seriestype = :scatter)
-
-
-# Some not very useful functions (I finally figured out how anonymous functions work)
-#
-# function evalspline(S, x, x_eval)
-#     len = length(x)
-
-#     if length(S) != len - 1
-#         return println("Error: Input cubic spline S does not match the list of x values")
-#     elseif x_eval < x[1] || x_eval > x[len]
-#         return println("Error: x_eval outside of valid x-interval for cubic spline S")
-#     end
-        
-#     i_eval = 1
-
-#     for i in 1:len-1
-#         if x_eval >= x[i] && x_eval <= x[i+1]
-#             i_eval = i
-#         end
-#     end
-
-#     S[i_eval](x_eval)
-# end
-
 # using Plots
 
-# function plotspline(S, x, h)
-#     len = length(x)
-
-#     if length(S) != len - 1
-#         return println("Error: Input cubic spline S does not match the list of x values")
-#     end
-
-#     xGrid = x[1]:h:x[len]
-#     yGrid = [evalspline(S, x, x_eval) for x_eval in xGrid]
-
-#     plot(xGrid, yGrid, title="Cubic Spline Plot")    
-# end
+# duckx = [.9,1.3,1.9,2.1,2.6,3.0,3.9,4.4,4.7,5.0,6.0,7.0,8.0,9.2,10.5,11.3,11.6,12.,12.6,13.,13.3];
+# duckf = [1.3,1.5,1.85,2.1,2.6,2.7,2.4,2.15,2.05,2.1,2.25,2.3,2.25,1.95,1.4,0.9,0.7,0.6,0.5,0.4,0.25];
+# duck = natcubicspline(duckx, duckf);
+# xGrid = 0.9:0.1:13.3; yVals = [duck(x) for x in xGrid];
+# plot(xGrid, yVals, xlims=(0,14), ylims=(-6,4))
+# plot!(duckx, duckf, seriestype = :scatter)
