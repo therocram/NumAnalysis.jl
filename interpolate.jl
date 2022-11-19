@@ -89,17 +89,17 @@ function newtondivdiff(x, f, x_eval=0)
     println("--------------------------------------------\
      --------------------------------------")
 
-    @printf("0\t%.7f\t%.7f\n", x[1], F[1,1])
+    @printf("0\t%.8f\t%.8f\n", x[1], F[1,1])
 
     # Display iterated rows of divided difference table
     for i in 2:len
-        printer = @sprintf("%d\t%.7f", i-1, x[i])
+        printer = @sprintf("%d\t%.8f", i-1, x[i])
         for j in 2:i
             F[i,j] = (F[i,j-1] - F[i-1,j-1]) / (x[i] - x[i-j+1])
-            printer = string(printer, @sprintf("\t%.7f", F[i,j-1]))
+            printer = string(printer, @sprintf("\t%.8f", F[i,j-1]))
         end
 
-        printer = string(printer, @sprintf("\t%.7f", F[i,i]))
+        printer = string(printer, @sprintf("\t%.8f", F[i,i]))
         println(printer)
     end
 
@@ -116,7 +116,7 @@ function newtondivdiff(x, f, x_eval=0)
         P += F[i,i]*prod
     end
 
-    @printf("\nP(%.2f) = %.7f\n", x_eval, P)
+    @printf("\nP(%.2f) = %.8f\n", x_eval, P)
 
     return P
 end
