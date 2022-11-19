@@ -7,10 +7,15 @@
 # Last Modified: 11/21/2022 (MM/DD/YYYY)
 # Version: 1.0
 #
-# Index:
-#   gaussbacksub        ***
-#   gausspivotpartial   ***
-#   gausspivotscaled    ***
+# Primary contents:
+#   gaussbacksub        25
+#   gausspivotpartial   48
+#   gausspivotscaled    93
+#   matrixfactorLU      148
+#   matrixfactorPtLU    207
+#   matrixfactorLDLt    267
+#   matrixfactorLLt     304
+#   systemsolveLU       344
 #########################################################
 
 using Printf
@@ -235,14 +240,13 @@ function matrixfactorPtLU(A)
             swaprow(P, i, k) # Any swap done with U must also be done with P
         end
 
-        # Eliminate column elements beneath U_ii and determine entries of "L"
+        # Eliminate column elements beneath U_ii
         reducecol(U, i)
     end
 
     PA = P*A
-    display(PA)
 
-    # Perform Gaussian elimination on PA and determing the elements
+    # Perform Gaussian elimination on PA and determine the elements
     # of "L"
     for i in 1:N-1
         for j in i+1:N
@@ -251,8 +255,6 @@ function matrixfactorPtLU(A)
             addrow(PA, j, i, -w)
         end
     end
-
-    display(L)
 
     return transpose(P)*L, U
 end
@@ -280,7 +282,6 @@ function matrixfactorLDLt(A)
         for j in 1:i-1
             v[j] = L[i,j]*D[j,j]
         end
-        println(v)
 
         D[i,i] = A[i,i] - innerprod(L[i,1:i-1],v[1:i-1])
 
@@ -334,7 +335,7 @@ end
 # System Solve LU
 # Solves the system 
 # Ax = b
-# for "x," where A = LU has been factored into the product of a lower triangular
+# for "x," where A = L*U has been factored into the product of a lower triangular
 # matrix "L" and an upper triangular matrix "U."
 function systemsolveLU(L, U, b)
     N = size(L)[1]
@@ -348,12 +349,12 @@ function systemsolveLU(L, U, b)
     L = typecheckfloat(L)
     U = typecheckfloat(U)
 
-    # Solve the equation Ly = b using forward subsitution
+    # Solve the equation L*y = b using forward subsitution
     Ly = augmentmatrix(L, b)
     y = forwardsub(Ly)
     
 
-    # Solve the equation Ux = y using backwards substitution
+    # Solve the equation U*x = y using backwards substitution
     Ux = augmentmatrix(U, y)
     x = backsub(Ux, true)
 
@@ -368,7 +369,7 @@ end
 #######################################################################
 
 # Perform gauss jordan elimination on matrix "A"
-# NOTE: If checktype = "false" method with permute "A"
+# NOTE: If checktype = "false" method will permute "A"
 function gaussjordanelim(A, checktype = true)
     if checktype
         A = typecheckfloat(A)
@@ -429,23 +430,11 @@ end
 
 # Returns true if "A" is a symmetric matrix. Returns false otherwise.
 function issymmetric(A)
-    N = size(A)[1]
-
-    # Cannot be symmetric if it is not square
-    if N != size(A)[2]
+    if A == transpose(A)
+        return true
+    else
         return false
     end
-
-    # Return false if A_ij != A_ji for any entries
-    for i in 1:N
-        for j in 1:N
-            if j != i && A[i,j] != A[j,i]
-                return false
-            end
-        end
-    end
-
-    return true
 end
 
 # Returns N x N Identity matrix
@@ -497,7 +486,7 @@ function addrow(A, n, m, w)
 end
 
 # Eliminates the column elements beneath A_ii
-# NOTE: Assumes that matrix has been properly pivoted/scaled
+# NOTE: Assumes that column has been properly pivoted/scaled
 # as desired
 function reducecol(A, i)
     for j in i+1:size(A)[1]
@@ -618,16 +607,4 @@ function maxlist(v)
     end
 
     return max
-end
-
-# Returns the element-wise absolute value
-# of a 1D list
-function abslist(v)
-    a = zeros(length(v))
-
-    for i in eachindex(v)
-        a[i] = abs(v[i])
-    end
-
-    return a
 end
