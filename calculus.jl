@@ -1,6 +1,6 @@
-##########################################################
+#########################################################
 # Calculus
-# File of helper functions numerically approximating derivatives
+# File of functions numerically approximating derivatives
 # and integrals
 
 # Author: Masen Pitts

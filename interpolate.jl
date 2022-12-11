@@ -1,6 +1,6 @@
-##########################################################
+#########################################################
 # Interpolate
-# File of helper functions used for creating interpolating
+# File of functions used for creating interpolating
 # polynomials for data sets.
 
 # Author: Masen Pitts

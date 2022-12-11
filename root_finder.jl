@@ -1,6 +1,6 @@
-##########################################################
+#########################################################
 # Root Finder
-# File of helper functions used for finding the roots and
+# File of functions used for finding the roots and
 # fixed points of real functions of one variable
 
 # Author: Masen Pitts
@@ -8,14 +8,12 @@
 # Version: 1.1
 #########################################################
 
+using Printf
 
 # Bisection Method
 # Implements the bisection method on the interval [a,b]
 # to approximate the root of a function "f" within some tolerance
 # "tol" for a maximum of "N" iterations.
-# "printi" is a boolean variable that determines whether
-# the function will print the total number of iterations
-# when it returns a value.
 function bisecmethod(f, a, b, tol, N)
     if f(a) == 0
         return a
@@ -58,7 +56,7 @@ function bisecmethod(f, a, b, tol, N)
         lastp = p
     end
 
-    println("\nMethod failed after N interations. N = ", N)
+    @error("\nMethod failed after N interations. N = ", N)
 end
 
 # Fixed Point
@@ -83,9 +81,6 @@ end
 # Approximates the root of a function "f" with first derivative
 # "fp" given some inital guess "p0" within a tolerance of "tol" 
 # for a maximum of "N" iterations.
-
-using Printf
-
 function newtons(f, fp, p0, tol, N)
     p = p0
 
