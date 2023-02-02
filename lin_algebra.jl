@@ -142,7 +142,9 @@ function augmentmatrix(A, b)
     N = size(A)[1]
 
     if N != size(A)[2]
-        return @error("Input matrix \"A\" must be square (dimensions N x N).")
+        return @error("Input matrix \"A\" must be square (dimensions N x N).", A)
+    elseif N != length(x)
+        return @error("Input matrix \"A\" and input vector \"b\" must have compatible shapes", A, b)
     end
 
     Ab = zeros((N,N+1))
@@ -251,9 +253,26 @@ function maxlist(v)
     return max
 end
 
+# Returns the norm (square root of sum of squares) of a vector "v"
+function norm(v)
+    return sqrt(innerprod(v,v))
+end
+
 # Returns the infinity norm of some vector "v"
 function norminfvector(v)
     return maxlist(abs.(v))
+end
+
+# Returns the index of the first component v_p in "v" such that
+#   abs(v_p) = infnorm(v)
+function domcomponent(v)
+    infnorm = norminfvector(v)
+
+    for i in eachindex(v)
+        if abs(v[i]) == infnorm
+            return i
+        end
+    end
 end
 
 # Returns the natural infinity norm of some N x N matrix "A"

@@ -359,7 +359,7 @@ function systemsolveLU(L, U, b)
 
     # Solve the equation U*x = y using backwards substitution
     Ux = augmentmatrix(U, y)
-    x = backsub(Ux, true)
+    x = backsub(Ux)
 
     return x
 end
