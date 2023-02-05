@@ -206,11 +206,13 @@ end
 # Inverse Power Method
 # Uses the inverse power method to approximate an eigenvalue
 # and associated eigenvector of input matrix "A" within tolerance "tol",
-# given initial eigenvector guess "x". Will run for a maximum of "Niter"
-# iterations before failing.
+# given initial eigenvector guess "x" and initial eigenvalue guess "q."
+# If "q" is not explicitly provided then an inital guess will be generated inside
+# the method.
+# Will run for a maximum of "Niter" iterations before failing.
 #
 # Note: This function uses Aitken's delta^2 procedure to accelerate convergence
-function eigeninvpower(A, x, tol, Niter)
+function eigeninvpower(A, x, tol, Niter, q = nothing)
     N = size(A)[1]
 
     # Essentially converts x to a vector type to allow compatible 
@@ -228,26 +230,18 @@ function eigeninvpower(A, x, tol, Niter)
     mu0 = 0
     mu1 = 0
 
+    # Special whitespace strings used for table formatting
+    token1 = "        "
+    token2 = "   "
+
     # Format output table
-    printStr = @sprintf("m\t")
-    for i in 1:N
-        printStr = string(printStr, @sprintf("x_%d\t\t", i))
+    initprint(x, token1, token2)
+
+    # Come up with initial eigenvalue guess q if one is not explicitly provided
+    if q === nothing
+        q = innerprod(x,A*x)/innerprod(x,x)
     end
-    printStr = string(printStr, "muhat\t\tError")
-
-    println(printStr)
-
-    # Print initial approximation
-    printStr = @sprintf("0\t")
-    for i in 1:N
-        printStr = string(printStr, @sprintf("%.6f\t", x[i]))
-    end
-    printStr = string(printStr, "n/a\t\tn/a")
-
-    println(printStr)
-
     # Calculate eigenvalue guess and scale x by its dominant component
-    q = innerprod(x,A*x)/innerprod(x,x)
     p = domcomponent(x)
     x /= x[p]
     
@@ -288,17 +282,7 @@ function eigeninvpower(A, x, tol, Niter)
         x = yyp
 
         # Display results of current iteration
-        printStr = @sprintf("%d\t", k)
-        for i in 1:N
-            printStr = string(printStr, @sprintf("%.6f\t", x[i]))
-        end
-        printStr = string(printStr, @sprintf("%.6f\t", 
-                            muhat == 0 ? muhat : 1/muhat + q))
-
-        # Print out error of current iteration
-        printStr = string(printStr, @sprintf("%.6e", error))
-
-        println(printStr)  
+        printeigen(k, x, muhat, error, token2)
 
         # Print results and end process if tolerance is satisfied
         if error < tol && k >= 4
@@ -331,10 +315,12 @@ function housholder(A)
         return @error("Input matrix A must be symmetric", A)
     end
 
+    # Ensure that A has a compatible data type
     A = typecheckfloat(A)
 
     N = size(A)[1]
 
+    # Initialize some helper arrays
     v = zeros(N)
     u = zeros(N)
     z = zeros(N)
@@ -371,10 +357,10 @@ function housholder(A)
         k1N1 = k+1:N-1
 
         for i in k1N1
-            i1N = i+1:N
+            j = i+1:N
 
-            A[i1N,i] = A[i1N,i] - v[i]*z[i1N] - v[i1N]*z[i]
-            A[i,i1N] = A[i1N,i]
+            A[j,i] = A[j,i] - v[i]*z[j] - v[j]*z[i]
+            A[i,j] = A[j,i]
 
             A[i,i] = A[i,i] - 2*v[i]*z[i]
         end
@@ -388,4 +374,237 @@ function housholder(A)
     end
 
     return A
+end
+
+# Returns similar upper hessenberg matrix of arbitrary input matrix A
+function hessenberg(A)
+    # Ensure that A has a compatible data type
+    A = typecheckfloat(A)
+
+    N = size(A)[1]
+
+    # Initialize some helper arrays
+    v = zeros(N)
+    u = zeros(N)
+    z = zeros(N)
+    y = zeros(N)
+
+    # Implement algorithm to update elements of A as described in
+    # pg. 598-600 of Numerical Analysis Burden and Faires, 9th Edition,
+    # using vectorized operation where possible
+    for k in 1:N-2
+        q = innerprod(A[k+1:N,k], A[k+1:N,k])
+
+        Ak1k = A[k+1,k]
+
+        if Ak1k == 0
+            alpha = -sqrt(q)
+        else
+            alpha = -sqrt(q)*Ak1k/abs(Ak1k)
+        end
+
+        rsq = alpha*alpha - alpha*Ak1k
+
+        v[k] = 0
+        v[k+1] = Ak1k - alpha
+
+        v[k+2:N] = A[k+2:N,k]
+
+        for j in 1:N
+            u[j] = innerprod(A[j,k+1:N], v[k+1:N])/rsq
+            y[j] = innerprod(A[k+1:N,j], v[k+1:N])/rsq
+        end
+
+        prod = innerprod(v[k+1:N], u[k+1:N])
+
+        z = u - (prod/rsq)*v
+
+        k1N = k+1:N
+
+        for i in k+1:N
+            j = 1:k
+
+            A[j,i] = A[j,i] - z[j]*v[i]
+            A[i,j] = A[i,j] - y[j]v[i]
+
+            j = k1N
+
+            A[j,i] = A[j,i] - z[j]*v[i] - y[i]*v[j]
+        end
+    end
+
+    return A
+end
+
+# Formatting for printing eigenvalue approximations and appending
+# eigenvalues to ongoing list in QR algorithm
+function seteigen(eigenvals, eigen, M)
+    append!(eigenvals, eigen)
+    @printf("\u03bb_%d = %.8f\n", M - length(eigenvals) + 1, eigen)
+end
+
+# QR Algorithm
+# Obtains the eigenvalues of the symmetric, tridiagonal input matrix "A"
+# using the QR algorithim within the given tolerance "tol" for a maximum of 
+# "Niter" iterations
+#
+# Note: Shifting, which accelerates the algorithm's convergence, is implemented
+# by default but can be disabled by setting "shifting" to false
+function qreigen(A, tol, Niter, shifting=true)
+    # Verify that A is symmetric and tridiagonal
+    if !issymmetric(A)
+        return @error("Input matrix A must be symmetric", A)
+    elseif !istridiag(A)
+        return @error("Input matrix A must be tridiagonal", A)
+    end
+
+    N = size(A)[1]
+    M = N # Constant holding the original size of the input matrix 
+
+    # Populate arrays storing diagonal and off-diagaonal elements of A
+    a = zeros(N)
+    b = zeros(N)
+
+    # Helper arrays used in main algorithm
+    f = zeros(N)
+    x = zeros(N)
+    y = zeros(N)
+    z = zeros(N)
+    g = zeros(N)
+    s = zeros(N)
+    q = zeros(N)
+    r = zeros(N)
+
+    # Used to store and return eigenvalue approximations
+    eigenvals = zeros(0)
+    #m = 0 # keeps track of the number of eigenvalues generated
+
+    for i in 1:N
+        a[i] = A[i,i]
+        if i != N  b[i+1] = A[i,i+1] end
+    end
+
+    #display(buildtridiag(a, b, b))
+
+    shift = 0 # This shift factor whill remain zero unless shifting = true
+    #simga = 0
+
+    # Run main algorithm for a maximum of N iterations
+    for k in 1:Niter
+        # Checks for eigenvalues within tolerance in last row of current matrix
+        if abs(b[N]) <= tol 
+            seteigen(eigenvals, a[N] + shift, M)
+            N -= 1 # Decrease size of current matrix by 1 in each dimension
+        end
+
+        # Checks for eigenvalues within tolerance in second row of current matrix
+        if abs(b[2]) <= tol
+            seteigen(eigenvals, a[1] + shift, M)
+            N -= 1 # Decrease size of current matrix by 1 in each dimension
+            a[1:N] = a[2:N+1] # Update values of a and b to reflect change in
+            b[2:N] = b[3:N+1] # matrix size
+        end
+
+        # Ends algorithm and returns eigenvalues if matrix has
+        # been reduced to nothing
+        if N == 0
+            return eigenvals
+        end
+
+        # Ends algorithm and returns eigenvalues if matrix has
+        # been reduced to one element
+        if N == 1
+            seteigen(eigenvals, a[1] + shift, M)
+            return eigenvals
+        end
+
+        # Splits up A into two seperate matrices and returns eigenvalues
+        # if off diagonal elements within tolerances are detected that are not 
+        # at the beginning or end of the matrix
+        for j in 3:N-1
+            if b[j] <= tol
+                println("Split matrix into")
+                display(buildtridiag(a[1:j-1], b[2:j-1], b[2:j-1]))
+                println("and")
+                display(buildtridiag(a[j:N], b[j+1:N], b[j+1:N]))
+
+                return eigenvals
+            end
+        end
+
+        # Compute shifting factor if shifting = true
+        if shifting
+            e = -(a[N-1] + a[N])
+            c = a[N]*a[N-1] - b[N]*b[N]
+            d = sqrt(e*e - 4*c)
+
+            if e > 0
+                mu1 = -2*c/(e + d)
+                mu2 = -(e + d)/2
+            else
+                mu1 = (d - e)/2
+                mu2 = 2*c/(d - e)
+            end
+            #println(mu1, " ", mu2)
+
+            # Stop algorithm and return eigenvalues if matrix has been reduced to
+            # 2 x 2 matrix
+            if N == 2
+                seteigen(eigenvals, mu1 + shift, M)
+                seteigen(eigenvals, mu2 + shift, M)
+
+                return eigenvals
+            end
+
+            # Set sigma to closest value to a[N] out of mu1 and mu2
+            sigma = abs(mu1 - a[N]) < abs(mu2 - a[N]) ? mu1 : mu2
+
+            # Accumulate shift amount
+            shift += sigma
+
+            for j in 1:N
+                f[j] = a[j] - sigma
+            end
+        else
+            for j in 1:N
+                f[j] = a[j]
+            end
+        end
+        
+        ##### Compute upper triangular R matrix
+        x[1] = f[1]
+        y[1] = b[2]
+
+        for j in 2:N
+            z[j-1] = sqrt(x[j-1]*x[j-1] + b[j]*b[j])
+            g[j] = x[j-1]/z[j-1]
+            s[j] = b[j]/z[j-1]
+            q[j-1] = g[j]*y[j-1] + s[j]*f[j]
+            x[j] = -s[j]*y[j-1] + g[j]*f[j]
+
+            if j != N
+                # r[j-1] = s[j]*b[j+1]
+                y[j] = g[j]*b[j+1]
+            end
+        end
+        #####
+
+        ##### Compute next iteration of A
+        z[N] = x[N]
+        a[1] = s[2]*q[1] + g[2]*z[1]
+        b[2] = s[2]*z[2]
+
+        for j in 2:N-1
+            a[j] = s[j+1]*q[j] + g[j]*g[j+1]*z[j]
+            b[j+1] = s[j+1]*z[j+1]
+        end
+
+        a[N] = g[N]*z[N]
+        #####
+    end
+
+    @printf("A^(%d):\n", Niter + 1)
+    display(buildtridiag(a, b[2:M], b[2:M]))
+    return @error("Exceeded maximum number of iterations.", Niter)    
+
 end

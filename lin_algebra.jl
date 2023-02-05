@@ -79,6 +79,50 @@ function issymmetric(A)
     end
 end
 
+# Returns true if "A" is a tridiagonal matrix. Returns false otherwise
+function istridiag(A)
+    # Cutoff value. Many algorithms for determining tridiagonal matrices
+    # return very small values in empty matrix entries instead of exactly 0.
+    # This cutoff value (on order of 1e-10 to 1e-20) takes this into account by
+    # considering any matrix entry below the cutoff value to be zeros
+    cutoff = 1e-10
+
+    for i in 1:size(A)[1]
+        for j in i+2:size(A)[2]
+            if A[i,j] >= cutoff
+                return false
+            end
+        end
+
+        for k in i+2:size(A)[2]
+            if A[k,i] >= cutoff
+                return false
+            end
+        end
+    end
+
+    return true
+end
+
+# Creates a tridiagonal matrix with diagonal elements given
+# by input vector "a", subdiagonal elements given by "b",
+# and superdiagonal elemetns given by "c"
+function buildtridiag(a, b, c)
+    N = length(a)
+
+    A = zeros(N,N)
+
+    for i in 1:N
+        A[i,i] = a[i]
+        if i < N
+            A[i+1,i] = b[i]
+            A[i,i+1] = c[i]
+        end
+    end
+
+    return A
+end
+
 # Returns N x N Identity matrix
 function IMatrix(N)
     I = zeros(N,N)
@@ -143,7 +187,7 @@ function augmentmatrix(A, b)
 
     if N != size(A)[2]
         return @error("Input matrix \"A\" must be square (dimensions N x N).", A)
-    elseif N != length(x)
+    elseif N != length(b)
         return @error("Input matrix \"A\" and input vector \"b\" must have compatible shapes", A, b)
     end
 
