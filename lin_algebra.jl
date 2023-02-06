@@ -4,8 +4,8 @@
 # on vectors (1D arrays) and matrices (2D arrays)
 
 # Author: Masen Pitts
-# Last Modified: 12/06/2022 (MM/DD/YYYY)
-# Version: 1.0
+# Last Modified: 2/05/2023 (MM/DD/YYYY)
+# Version: 1.4
 #######################################################################
 
 using Printf
@@ -180,23 +180,27 @@ function reducecol(A, i)
     end
 end
 
-# Create augmented N x N+1 matrix "Ab" using N x N matrix "A"
-# and N x 1 (or 1 x N) vector "b"
+# Create augmented M x N+1 matrix "Ab" using M x N matrix "A"
+# and M x 1 (or 1 x M) vector "b"
 function augmentmatrix(A, b)
-    N = size(A)[1]
+    sA = size(A)
 
-    if N != size(A)[2]
-        return @error("Input matrix \"A\" must be square (dimensions N x N).", A)
-    elseif N != length(b)
+    # if N != size(A)[2]
+    #     return @error("Input matrix \"A\" must be square (dimensions N x N).", A)
+    # elseif N != length(b)
+    #     return @error("Input matrix \"A\" and input vector \"b\" must have compatible shapes", A, b)
+    # end
+
+    if sA[1] != length(b)
         return @error("Input matrix \"A\" and input vector \"b\" must have compatible shapes", A, b)
-    end
+    end  
 
-    Ab = zeros((N,N+1))
-    
+    Ab = typeof(A)(undef,sA[1],sA[2]+1)
+
     # Fill all entries of "Ab" except last column with entries of "A"
     # Then fill last column with enetries of "b"
-    Ab[:,1:N] = A
-    Ab[:,N+1] = b
+    Ab[:,1:sA[2]] = A
+    Ab[:,sA[2]+1] = b
 
     return Ab
 end
@@ -251,16 +255,6 @@ function backsub(A, printx=false)
 
     # Format a printed result if desired
     if printx
-        # line1 = @sprintf("i\t")
-        # line2 = @sprintf("x_i\t")
-
-        # for j in 1:N
-        #     line1 = string(line1, @sprintf("%d\t\t", j))
-        #     line2 = string(line2, @sprintf("%.4f\t\t", x[j]))
-        # end
-
-        # println(line1,"\n",line2)
-
         for j in 1:N
             @printf("x%d = %.7f\n", j, x[j])
         end
