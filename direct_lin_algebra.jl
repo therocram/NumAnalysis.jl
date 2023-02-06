@@ -143,7 +143,7 @@ function gausspivotscaled(A)
         reducecol(A, i)
     end
 
-    return backsub(A, true)
+    return backsub(A)
 end
 
 # LU Factorization

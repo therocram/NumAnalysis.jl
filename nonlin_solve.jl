@@ -8,7 +8,7 @@
 # Version: 1.0
 #########################################################
 
-include("lin_algebra.jl")
+include("direct_lin_algebra.jl")
 
 using Printf
 
@@ -87,9 +87,9 @@ function passto(x, F::Matrix{Function}, forcefloat=false)
 end
 
 # Non-Linear Fixed Point Algorithm
-# Solves for the fixed point of input transformation "F" with
-# initial guess "p0" until error within "tol" is reached or until
-# "Niter" iterations have occured
+# Solves for the fixed point of input transformation "F" 
+# (vector of functions) with initial guess "p0" until error
+# within "tol" is reached or until "Niter" iterations have occured
 function fixedpointNL(F, p0, tol, Niter, usegaussSeidel=true)
     # Ensure that p0 and F are of compatible sizes
     if length(p0) != length(F)
@@ -132,6 +132,57 @@ function fixedpointNL(F, p0, tol, Niter, usegaussSeidel=true)
 
         # Store current p value for use in next approximation
         p0 = p
+    end
+
+    @error("Exceeded maximum number of iterations", Niter)
+end
+
+# Newton's Method for Nonlinear systems
+# Approximates the solution of the nonlinear system
+#   F(x) = 0
+# Where "F" is the input transformation (vector of functions). 
+# Other parameters include the initial guess vector "x", 
+# the Jacobian transformation matrix "J" (matrix of functions),
+# the desired tolerance "tol", and the maximum number of iterations "Niter"
+function newtonsNL(F::Vector{Function}, x, J::Matrix{Function}, tol, Niter)
+    # Ensure that x0 and F are of compatible sizes
+    if length(x) != length(F)
+        @error("Input guess vector x must be same length \
+        as input transformation F", x, F)
+    elseif length(F) != size(J)[1]
+        @error("Input transformation F and input Jacobian J \
+        must have compatible shapes", x, F)
+    end
+
+    # Special whitespace strings used for table formatting
+    token1 = "        "
+    token2 = "   "
+
+    # Format output table and print initial approximation
+    initprint(x0, token1, token2)
+
+    # Forms the augmented matrix [J:F]
+    JF = augmentmatrix(J,F)
+
+    for k in 1:Niter
+        # Compute entries of the augmented matrix [J(x):F(x)]
+        JFx = passto(x,JF)
+
+        # Solve the linear system J(x)*y = -F(x)
+        y = gausspivotscaled(JFx)
+
+        # Update solution estimate and calculate error
+        x += y
+        error = norminfvector(y)
+
+        # Output current iteration to data table
+        printiter(k, x, error, token2)
+
+        # Output current estimation if error is within tolerance
+        if error < tol
+            printresults(x)
+            return x
+        end
     end
 
     @error("Exceeded maximum number of iterations", Niter)
