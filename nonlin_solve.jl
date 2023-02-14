@@ -12,6 +12,9 @@ include("direct_lin_algebra.jl")
 
 using Printf
 
+# Prints a formatted output table and initial approximation values "x0"
+# for iterative numerical methods using whitespace specifiers "token1"
+# and "token2"
 function initprint(x0, token1, token2)
     # Format output table
     printStr = string("k", token2)
@@ -32,6 +35,8 @@ function initprint(x0, token1, token2)
     println(printStr)
 end
 
+# Prints the formatted results "x" of the "k"th iteration of an iterative
+# numerical algorithm with error "error" using the whitespace specifier "token2"
 function printiter(k, x, error, token2)
     # Print currnet approximation
     printStr = string(k,token2)
@@ -45,6 +50,8 @@ function printiter(k, x, error, token2)
     println(printStr)
 end
 
+# A formatted printing of each element of a list of 
+# floating point numbers "x"
 function printresults(x)
     print("\n")
     for i in eachindex(x)
@@ -89,7 +96,10 @@ end
 # Non-Linear Fixed Point Algorithm
 # Solves for the fixed point of input transformation "F" 
 # (vector of functions) with initial guess "p0" until error
-# within "tol" is reached or until "Niter" iterations have occured
+# within "tol" is reached or until "Niter" iterations have occured.
+#
+# The boolean parameter "usegaussSeidel", which is true by default,
+# enables use of the Gauss-Seidel method to accelerate convergence.
 function fixedpointNL(F, p0, tol, Niter, usegaussSeidel=true)
     # Ensure that p0 and F are of compatible sizes
     if length(p0) != length(F)
@@ -118,8 +128,9 @@ function fixedpointNL(F, p0, tol, Niter, usegaussSeidel=true)
         end
 
         # Estimate relative error of current approximation
-        error = norminfvector(p0) == 0 ? norminfvector(p - p0) :
-                norminfvector(p - p0)/norminfvector(p0)
+        # error = norminfvector(p0) == 0 ? norminfvector(p - p0) :
+        #         norminfvector(p - p0)/norminfvector(p0)
+        error = norminfvector(p - p0)
 
         # Print results of current iteration
         printiter(k, p, error, token2)
@@ -159,18 +170,21 @@ function newtonsNL(F::Vector{Function}, x, J::Matrix{Function}, tol, Niter)
     token2 = "   "
 
     # Format output table and print initial approximation
-    initprint(x0, token1, token2)
-
-    # Forms the augmented matrix [J:F]
-    JF = augmentmatrix(J,F)
+    initprint(x, token1, token2)
 
     for k in 1:Niter
-        # Compute entries of the augmented matrix [J(x):F(x)]
-        JFx = passto(x,JF)
+        # Compute entries of J(x)
+        Jx = passto(x,J,true)
+
+        # Compute entries of F(x)
+        Fx = passto(x,F,true)
+
+        # Forms the augmented matrix [J(x):-F(x)]
+        JFx = augmentmatrix(Jx,-Fx)
 
         # Solve the linear system J(x)*y = -F(x)
         y = gausspivotscaled(JFx)
-
+        
         # Update solution estimate and calculate error
         x += y
         error = norminfvector(y)
