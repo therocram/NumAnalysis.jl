@@ -1,4 +1,4 @@
-# calculus.jl Documentation
+# NumAnalysis.jl Documentation
 
 ```@docs
 gaussianquad(f, a, b, n; sub=1)

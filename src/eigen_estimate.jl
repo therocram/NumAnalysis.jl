@@ -9,7 +9,7 @@
 # Version: 1.1
 ##########################################################
 
-using Printf
+# using Printf
 
 # Include various linear algebra helper methods
 include("direct_lin_algebra.jl")
@@ -323,10 +323,10 @@ function eigeninvpower(A, x, tol, Niter, q = nothing)
 
 end
 
-# Housholder's Method
+# Householder's Method
 # Returns a symmetric tridiagonal matrix similar to symmetric input matrix
 # A using Housholder's Method
-function housholder(A)
+function householder(A)
     # Verify that A is symmetric
     if !issymmetric(A)
         return @error("Input matrix A must be symmetric", A)

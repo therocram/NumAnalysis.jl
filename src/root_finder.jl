@@ -8,7 +8,7 @@
 # Version: 1.1
 #########################################################
 
-using Printf
+# using Printf
 
 # Bisection Method
 # Implements the bisection method on the interval [a,b]
@@ -37,6 +37,12 @@ function bisecmethod(f, a, b, tol, N)
     for i = 1:N
         p = a + (b-a)/2
         val = f(p)
+
+        if val == 0
+            println("\nSolution at ", p, ". f(", p, ") = 0")
+            return
+        end
+
         error = p == 0 ? abs(p-lastp) : abs(p-lastp)/abs(p) 
 
         @printf("%d\t%.8e\t  %.8e\t%.8e\n", i, p, val, error)

@@ -1,4 +1,4 @@
-using Documenter
-include("../src/calculus.jl")
+include("../src/NumAnalysis.jl")
+using Documenter, .NumAnalysis
 
-makedocs(sitename="My Documentation")
+makedocs(sitename="NumAnalysis.jl")
