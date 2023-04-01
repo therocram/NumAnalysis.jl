@@ -1,6 +1,7 @@
 module NumAnalysis
 
 using Printf
+using FastGaussQuadrature
 
 include("calculus.jl")
 export simpson,

@@ -1,0 +1,8 @@
+name = "NumAnalysis"
+uuid = "45bda370-c971-439a-9fec-67f2643ffa9d"
+authors = ["Masen <therocram@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+FastGaussQuadrature = "442a2c76-b920-505d-bb47-c5924d526838"

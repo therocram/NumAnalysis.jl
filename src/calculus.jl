@@ -8,7 +8,7 @@
 # Version: 1.2
 #########################################################
 
-using FastGaussQuadrature
+#using FastGaussQuadrature
 
 # Composite Simpson's Rule.
 # Approximates the integral I = Int(f(x), a < x < b) using

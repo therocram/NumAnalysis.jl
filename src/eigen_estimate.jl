@@ -12,9 +12,9 @@
 # using Printf
 
 # Include various linear algebra helper methods
-include("direct_lin_algebra.jl")
+# include("direct_lin_algebra.jl")
 
-function initprint(x0, token1, token2)
+function initprinteigen(x0, token1, token2)
     # Format output table
     printStr = string("m", token2)
     for i in eachindex(x0)
@@ -95,7 +95,7 @@ function eigenpower(A, x, tol, Niter, usesymm=true, useaitken=true)
     token2 = "   "
 
     # Format output table and print initial approximation
-    initprint(x, token1, token2)
+    initprinteigen(x, token1, token2)
     
     # Main algorithm starts. Runs until tolerance is satisfied or until 
     # Niter iterations have been done
@@ -178,7 +178,7 @@ function eigenpowersym(A, x, N, tol, Niter)
     token2 = "   "
 
     # Format output table and print initial approximation
-    initprint(x0, token1, token2)
+    initprinteigen(x0, token1, token2)
 
     # Main algorithm starts. Runs until tolerance is satisfied or untile Niter
     # iterations have been done
@@ -252,7 +252,7 @@ function eigeninvpower(A, x, tol, Niter, q = nothing)
     token2 = "   "
 
     # Format output table
-    initprint(x, token1, token2)
+    initprinteigen(x, token1, token2)
 
     # Come up with initial eigenvalue guess q if one is not explicitly provided
     if q === nothing
