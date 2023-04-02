@@ -60,14 +60,28 @@ function trapezoid(f, a, b, n)
     return h*(y0 + 2*y1)/2
 end
 
-# Adaptive Quadrature Method
-# Approximates the integral I = Int(f(x), a < x < b) within
-# a given tolerance "tol" using a recursive adaptive quadrature method
-# based on Simpson's Rule with n=4 for a maximum of N subintervals
-#
-# The parameter "base" is a boolean value that controls when the 
-# program initializes and when it fails. It should always be set to "true"
-# when being called by the user.
+
+"""
+    adaptivequad(f, a, b, tol, N, base=true)
+
+Approximates the integral 
+
+```math
+\\int_{a}^{b} f(x) dx 
+```
+
+within a given tolerance `tol` using a recursive adaptive quadrature 
+method based on Simpson's Rule for a maximum of `N` subintervals.
+
+The parameter `base` is a boolean value that controls when the 
+program initializes and when it fails. It should always be set to `true`
+when being called by the user.
+
+# Examples
+
+
+See also [`simpson`](@ref), [`gaussianquad`](@ref), [`trapezoid`](@ref)
+"""
 function adaptivequad(f, a, b, tol, N, base=true)
     # Initializes subinterval tracking variable "n" at base iteration
     if base 
@@ -119,6 +133,79 @@ function adaptivequad(f, a, b, tol, N, base=true)
             end
         end
     end
+end
+
+
+"""
+    gaussianquad(f::Function, a, b, n; sub = 1)
+
+Approximates the integral 
+
+```math
+\\int_{a}^{b} f(x) dx 
+```
+
+using a `n` order Gaussian quadrature approximation on `sub`
+subintervals.
+
+By default, the Gaussian quadrature nodes are spread over the
+given interval (`a`,`b`), meaning that the error of the approximation
+is reduced by using a higher `n`.
+
+However, error can also be significantly reduced by applying the same
+order of Gaussian quadrature to a specified number of subsets of the
+original interval (`a`,`b`). In the case where `sub` ``\\neq`` 1, 
+Gaussian quadrature is seperately applied to `sub` subintervals, each
+of width `h = (b - a)/sub`.
+
+# Examples
+Even with a very low order `n` we can still produce accurate results.
+The true value of the integral estimated below to 9 decimal places 
+is 0.804776489.
+```jldoctest
+julia> f(x) = sin(x^2)
+f (generic function with 1 method)
+
+julia> gaussianquad(f, 0, 2, 5)
+0.8048689412592385
+```
+Accuracy can be further improved by making use of subintervals:
+```jldoctest
+julia> gaussianquad(f, 0, 2, 4, sub=4)
+0.8047764537878016
+```
+
+See also [`adaptivequad`](@ref), [`simpson`](@ref), [`trapezoid`](@ref)
+"""
+function gaussianquad(f::Function, a, b, n; sub=1)
+    # Use FastGaussQuadrature package to very quickly obtain nodes and weights
+    # of Legendre polynomial expansion
+    nodes, weights = FastGaussQuadrature.gausslegendre(n)
+
+    # Divide region of integration into "sub" number of subintervals
+    h = (b-a)/sub
+    leftends = [a + j*h for j in 0:sub-1] 
+    rightends = [a + j*h for j in 1:sub]
+
+    sum = 0 # Accumulates integral area
+
+    # Estimate integral over each subinterval, then return the total
+    # sum
+    for j in 1:sub
+        a = leftends[j]
+        b = rightends[j]
+
+        # Perfrom Gaussian Quadrature integration by transforming
+        # integration variable to a region on the interval [-1,1]
+        subsum = 0
+        for i in eachindex(nodes)
+            subsum += weights[i]*f( ( (b-a)*nodes[i] + (b+a) )/2 )
+        end
+
+        sum += subsum*(b-a)/2
+    end
+
+    return sum
 end
 
 # This code is obsolete compared to the FastGaussQuadrature package's
@@ -207,46 +294,3 @@ end
 
 #     return nodes, weights
 # end
-
-"""
-    gaussianquad(f, a, b, n; sub = 1)
-
-Approximates the integral 
-
-```math
-\\int_{a}^{b} f(x) dx 
-```
-
-using an `n` order Gaussian quadrature approximation on `sub`
-subintervals.
-"""
-function gaussianquad(f, a, b, n; sub=1)
-    # Use FastGaussQuadrature package to very quickly obtain nodes and weights
-    # of Legendre polynomial expansion
-    nodes, weights = FastGaussQuadrature.gausslegendre(n)
-
-    # Divide region of integration into "sub" number of subintervals
-    h = (b-a)/sub
-    leftends = [a + j*h for j in 0:sub-1] 
-    rightends = [a + j*h for j in 1:sub]
-
-    sum = 0 # Accumulates integral area
-
-    # Estimate integral over each subinterval, then return the total
-    # sum
-    for j in 1:sub
-        a = leftends[j]
-        b = rightends[j]
-
-        # Perfrom Gaussian Quadrature integration by transforming
-        # integration variable to a region on the interval [-1,1]
-        subsum = 0
-        for i in eachindex(nodes)
-            subsum += weights[i]*f( ( (b-a)*nodes[i] + (b+a) )/2 )
-        end
-
-        sum += subsum*(b-a)/2
-    end
-
-    return sum
-end
