@@ -211,11 +211,14 @@ end
 """
     gaussianquad(f, a, b, n; sub = 1)
 
-Approximates the integral blahblahblah
+Approximates the integral 
 
 ```math
-\\sqrt[n]{1 + x + x^2 + \\ldots}
+\\int_{a}^{b} f(x) dx 
 ```
+
+using an `n` order Gaussian quadrature approximation on `sub`
+subintervals.
 """
 function gaussianquad(f, a, b, n; sub=1)
     # Use FastGaussQuadrature package to very quickly obtain nodes and weights
