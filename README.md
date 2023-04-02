@@ -1,4 +1,4 @@
-# Num Analysis
+# NumAnalysis.jl
 Simple backup and reference repository for numerical analysis code primarily written in Julia.
 
 For now the repository itself remains mostly unorganized. The files indicate the numerical analysis topic the
