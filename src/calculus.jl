@@ -211,7 +211,11 @@ end
 """
     gaussianquad(f, a, b, n; sub = 1)
 
-Approximates ``\\sqrt[n]{1 + x + x^2 + \\ldots}``
+Approximates the integral blahblahblah
+
+```math
+\\sqrt[n]{1 + x + x^2 + \\ldots}
+```
 """
 function gaussianquad(f, a, b, n; sub=1)
     # Use FastGaussQuadrature package to very quickly obtain nodes and weights
