@@ -4,8 +4,7 @@
 # and integrals
 
 # Author: Masen Pitts
-# Last Modified: 3/30/2022 (MM/DD/YYYY)
-# Version: 1.2
+# Last Modified: 4/2/2022 (MM/DD/YYYY)
 #########################################################
 
 #using FastGaussQuadrature
