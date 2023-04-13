@@ -8,8 +8,6 @@
 # Version: 1.1
 #########################################################
 
-# using Printf
-
 # Bisection Method
 # Implements the bisection method on the interval [a,b]
 # to approximate the root of a function "f" within some tolerance

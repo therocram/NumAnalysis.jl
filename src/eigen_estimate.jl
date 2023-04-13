@@ -9,11 +9,6 @@
 # Version: 1.1
 ##########################################################
 
-# using Printf
-
-# Include various linear algebra helper methods
-# include("direct_lin_algebra.jl")
-
 function initprinteigen(x0, token1, token2)
     # Format output table
     printStr = string("m", token2)

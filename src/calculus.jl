@@ -7,8 +7,6 @@
 # Last Modified: 4/2/2022 (MM/DD/YYYY)
 #########################################################
 
-#using FastGaussQuadrature
-
 # Composite Simpson's Rule.
 # Approximates the integral I = Int(f(x), a < x < b) using
 # Simpson's Rule on "n" subintervals.
@@ -88,7 +86,7 @@ function adaptivequad(f, a, b, tol, N, base=true)
     end
 
     # Fail condition
-    if n > N
+    if n::Int64 > N
         return nothing
     end
 
@@ -136,7 +134,7 @@ end
 
 
 """
-    gaussianquad(f::Function, a, b, n; sub = 1)
+    gaussianquad(f, a, b, n; sub = 1)
 
 Approximates the integral 
 
@@ -176,12 +174,13 @@ julia> gaussianquad(f, 0, 2, 4, sub=4)
 
 See also [`adaptivequad`](@ref), [`simpson`](@ref), [`trapezoid`](@ref)
 """
-function gaussianquad(f::Function, a, b, n; sub=1)
+function gaussianquad(f, a, b, n; sub=1)
     # Use FastGaussQuadrature package to very quickly obtain nodes and weights
     # of Legendre polynomial expansion
     nodes, weights = FastGaussQuadrature.gausslegendre(n)
 
-    # Divide region of integration into "sub" number of subintervals
+    # Divide region of integration into "sub" number of equally spaced
+    # subintervals
     h = (b-a)/sub
     leftends = [a + j*h for j in 0:sub-1] 
     rightends = [a + j*h for j in 1:sub]
@@ -198,98 +197,11 @@ function gaussianquad(f::Function, a, b, n; sub=1)
         # integration variable to a region on the interval [-1,1]
         subsum = 0
         for i in eachindex(nodes)
-            subsum += weights[i]*f( ( (b-a)*nodes[i] + (b+a) )/2 )
+            subsum += weights[i]*f( ( h*nodes[i] + (b+a) )/2 )
         end
 
-        sum += subsum*(b-a)/2
+        sum += subsum*h/2
     end
 
     return sum
 end
-
-# This code is obsolete compared to the FastGaussQuadrature package's
-# capabilites. Still a cool learning exercise. 
-#
-# using Polynomials, SpecialPolynomials
-
-# """
-#     getlegendre(n)
-
-# Return the nth order Legendre polynomial P_n(x) as implemented
-# by the `SpecialPolynomials` packages.
-# """
-# function getlegendre(n)
-#     last = zeros(n+1); last[end] = 1
-
-#     return Legendre(last)
-# end
-
-# """
-#     getweight(nodes, i)
-
-# Return the Gaussian quadrature weight corresponding to the ith node x_i, 
-# where the P(x_i) = 0 and P(x) is the appropriate Legendre polynomial.
-# """
-# function getweight(nodes, i)
-#     xi = nodes[i]
-
-#     p = Polynomial(1)
-
-#     for j in eachindex(nodes)
-#         if j != i
-#             nodediff = nodes[i] - nodes[j]
-#             p *= Polynomial([-nodes[j]/(nodediff), 1/(nodediff)])
-#         end
-#     end
-    
-#     return integrate(p, -1, 1)
-# end
-
-# """
-#     gausslegendre(n)
-
-# Return the nodes and weights corresponding to a
-# Gaussian Quadrature approximation of order n in the Legendre polynomials.
-
-# Values of 1 ≤ n ≤ 20 should generally be used. Larger values of n
-# can be used, but round off error begins to become non-negligible.
-
-# # Examples
-# ```jldoctest
-# julia> nodes, weights = gausslegendre(4);
-
-# julia> nodes
-# 4-element Vector{Float64}:
-#  -0.8611363115940526
-#  -0.33998104358485626
-#   0.33998104358485626
-#   0.8611363115940526
-
-# julia> weights
-# 4-element Vector{Float64}:
-#  0.6521451548625463
-#  0.3478548451374537
-#  0.6521451548625463
-#  0.3478548451374537
-# ```
-# """
-# function gausslegendre(n)
-#     P = getlegendre(n)
-
-#     nodes = real(roots(P)) # Most computationally demanding part
-#     weights = zeros(n)
-
-#     if n % 2 == 0
-#         half = div(n,2) + 1:n
-#         halfweights = [getweight(nodes, i) for i in half]
-#         weights[half] = halfweights
-#         weights[1:div(n,2)] = reverse(halfweights)
-#     else
-#         midhalf = div(n,2) + 1:n
-#         halfweights = [getweight(nodes, i) for i in midhalf]
-#         weights[midhalf] = halfweights
-#         weights[1:div(n,2)] = reverse(halfweights)[1:end-1]
-#     end
-
-#     return nodes, weights
-# end

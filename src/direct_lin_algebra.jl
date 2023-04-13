@@ -18,11 +18,6 @@
 #   systemsolveLU       344
 #########################################################
 
-#using Printf
-
-# Include various linear algebra helper methods
-# include("lin_algebra.jl")
-
 # Gaussian Elimination with Backwards Substitution
 # Directly solves a linear system by performing
 # Gaussian elimination on a provided N x N+1 augmented

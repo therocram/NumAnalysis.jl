@@ -12,9 +12,6 @@
 #   gaussseidel 100
 #########################################################
 
-# Include various linear algebra helper methods
-# include("lin_algebra.jl")
-
 # Jacobi Iterative Method
 # Solves the matrix equation
 #   A*x = b

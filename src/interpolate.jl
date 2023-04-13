@@ -8,8 +8,6 @@
 # Version: 1.1
 #########################################################
 
-# using Printf
-
 # Neville's Method
 # Evaluates the Lagrange interpolating polynomial  at "x_eval" that agrees with some
 # function at points "x" with corresponding values of "f"

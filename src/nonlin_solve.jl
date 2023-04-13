@@ -8,10 +8,6 @@
 # Version: 1.0
 #########################################################
 
-# include("direct_lin_algebra.jl")
-
-# using Printf
-
 # Prints a formatted output table and initial approximation values "x0"
 # for iterative numerical methods using whitespace specifiers "token1"
 # and "token2"

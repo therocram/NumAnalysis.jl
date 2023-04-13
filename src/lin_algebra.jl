@@ -8,8 +8,6 @@
 # Version: 1.4
 #######################################################################
 
-# using Printf
-
 # Perform gauss jordan elimination on matrix "A"
 # NOTE: If checktype = "false" method will permute "A"
 function gaussjordanelim(A, checktype = true)
