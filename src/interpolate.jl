@@ -384,3 +384,14 @@ end
 # xGrid = 0.9:0.1:13.3; yVals = [duck(x) for x in xGrid];
 # plot(xGrid, yVals, xlims=(0,14), ylims=(-6,4))
 # plot!(duckx, duckf, seriestype = :scatter)
+
+"""
+    fft(y)
+
+Started FFT implementation
+y - input function values
+"""
+function fft(y)
+end
+
+# Note: cispi(x) = exp(im*pi*x)

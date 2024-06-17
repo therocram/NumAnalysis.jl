@@ -13,7 +13,7 @@
 #
 # NOTE: Using this function with n=2 is equivalent to performing
 # a single Simpson's Rule approximation over [a,b]
-function simpson(f, a, b, n)
+function simpson(f::Function, a, b, n)
     # Give warning if n is not even
     if n % 2 != 0
         @warn("Method will not give accurate results for odd n")

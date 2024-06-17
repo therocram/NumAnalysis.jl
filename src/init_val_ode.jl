@@ -69,13 +69,19 @@ function ivpsetup(a, b, y0, N, y=nothing, printres=false)
     return h, t, w, token2
 end
 
-# Approximate the solution y(t) to the initial-value problem
-#   y' = f(t,y), a <= t <= b, y(a) = y0
-# at N + 1 equally spaced numbers on the interval [a,b] using the
-# one step solver method given by "solver"
-#
-# The true solution "y" is optionally given if the error of the approximation
-# is to be printed
+"""
+    ivpsolve(f, a, b, y0, N; solver=rungekuttaO4, y=nothing, printres=false)
+
+Approximate the solution y(t) to the initial-value problem
+```math
+y' = f(t,y), a <= t <= b, y(a) = y0
+```
+at `N` + 1 equally spaced numbers on the interval [`a`,`b`] using the
+one step solver method given by `solver`.
+
+Providing the true solution `y` will print the error of the approximation.
+But if printres=false will it???
+"""
 function ivpsolve(f, a, b, y0, N; solver=rungekuttaO4, y=nothing, printres=false)
     # Setup mesh spacing, solution arrays, and custom whitespace token
     h, t, w, token2 = ivpsetup(a, b, y0, N, y, printres)
