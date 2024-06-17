@@ -104,7 +104,7 @@ end
 
 # Creates a tridiagonal matrix with diagonal elements given
 # by input vector "a", subdiagonal elements given by "b",
-# and superdiagonal elemetns given by "c"
+# and superdiagonal elements given by "c"
 function buildtridiag(a, b, c)
     N = length(a)
 
