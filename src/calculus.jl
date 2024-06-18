@@ -57,6 +57,9 @@ function trapezoid(f, a, b, n)
     return h*(y0 + 2*y1)/2
 end
 
+# Add these to both docs later
+#, [`simpson`](@ref), [`trapezoid`](@ref)
+
 
 """
     adaptivequad(f, a, b, tol, N, base=true)
@@ -77,7 +80,7 @@ when being called by the user.
 # Examples
 
 
-See also [`simpson`](@ref), [`gaussianquad`](@ref), [`trapezoid`](@ref)
+See also [`gaussianquad`](@ref)
 """
 function adaptivequad(f, a, b, tol, N, base=true)
     # Initializes subinterval tracking variable "n" at base iteration
@@ -172,7 +175,7 @@ julia> gaussianquad(f, 0, 2, 4, sub=4)
 0.8047764537878016
 ```
 
-See also [`adaptivequad`](@ref), [`simpson`](@ref), [`trapezoid`](@ref)
+See also [`adaptivequad`](@ref)
 """
 function gaussianquad(f, a, b, n; sub=1)
     # Use FastGaussQuadrature package to very quickly obtain nodes and weights

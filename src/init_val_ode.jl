@@ -74,7 +74,7 @@ end
 
 Approximate the solution y(t) to the initial-value problem
 ```math
-y' = f(t,y), a <= t <= b, y(a) = y0
+y' = f(t,y), \\hspace{0.2cm} a \\leq t \\leq b, \\hspace{0.2cm} y(a) = y0
 ```
 at `N` + 1 equally spaced numbers on the interval [`a`,`b`] using the
 one step solver method given by `solver`.
