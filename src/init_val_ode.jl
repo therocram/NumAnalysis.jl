@@ -40,7 +40,7 @@ function printstep(i, t, w, token2, y=nothing)
     end
 end
 
-# Initializes a IVP for various approximation methods given the interval 
+# Initializes an IVP for various approximation methods given the interval 
 #   a <= t <= b
 # the initial condition y(a) = y0, and the total number of steps N
 #
@@ -72,17 +72,40 @@ end
 """
     ivpsolve(f, a, b, y0, N; solver=rungekuttaO4, y=nothing, printres=false)
 
-Approximate the solution y(t) to the initial-value problem
+Approximate the solution ``y(t)`` to the initial-value problem
 ```math
 y' = f(t,y), \\hspace{0.2cm} a \\leq t \\leq b, \\hspace{0.2cm} y(a) = y0
 ```
-at `N` + 1 equally spaced numbers on the interval [`a`,`b`] using the
+at `N` + 1 equally spaced values of ``t`` on the interval [`a`,`b`] using the
 one step solver method given by `solver`.
 
-Providing the true solution `y` will print the error of the approximation.
-But if printres=false will it???
+The function returns a tuple of the form `(t, w)`, where `t` contains all of the...
+
+```jldoctest
+
+```
+
+The user can optionally have the method print the results of each step of the solver by 
+setting `printres = true`:
+
+```jldoctest
+
+```
+
+Providing the true solution `y` will automatically print the results of each step along
+with the true error of the approximation at each step:
+
+```jldoctest
+
+```
 """
 function ivpsolve(f, a, b, y0, N; solver=rungekuttaO4, y=nothing, printres=false)
+    # If y(t), the true solution, is provided then the results will automatically
+    # be printed.
+    if printres == false && y !== nothing
+        printres = true
+    end
+    
     # Setup mesh spacing, solution arrays, and custom whitespace token
     h, t, w, token2 = ivpsetup(a, b, y0, N, y, printres)
 

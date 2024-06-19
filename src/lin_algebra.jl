@@ -11,6 +11,9 @@
 # Perform gauss jordan elimination on matrix "A"
 # NOTE: If checktype = "false" method will permute "A"
 function gaussjordanelim(A, checktype = true)
+    # If a matrix of integers is passed to this function it is
+    # often necessary to convert it to a matrix of floating
+    # point numbers to prevent type errors.
     if checktype
         A = typecheckfloat(A)
     end
@@ -82,7 +85,7 @@ function istridiag(A)
     # Cutoff value. Many algorithms for determining tridiagonal matrices
     # return very small values in empty matrix entries instead of exactly 0.
     # This cutoff value (on order of 1e-10 to 1e-20) takes this into account by
-    # considering any matrix entry below the cutoff value to be zeros
+    # considering any matrix entry below the cutoff value to be zero
     cutoff = 1e-10
 
     for i in 1:size(A)[1]
@@ -121,7 +124,7 @@ function buildtridiag(a, b, c)
     return A
 end
 
-# Returns N x N Identity matrix
+# Returns the N x N Identity matrix
 function IMatrix(N)
     I = zeros(N,N)
 
@@ -169,7 +172,7 @@ function addrow(A, n, m, w)
     end
 end
 
-# Eliminates the column elements beneath A_ii
+# Eliminates the column elements beneath A_ii (the diagonal)
 # NOTE: Assumes that column has been properly pivoted/scaled
 # as desired
 function reducecol(A, i)

@@ -71,14 +71,33 @@ Approximates the integral
 ```
 
 within a given tolerance `tol` using a recursive adaptive quadrature 
-method based on Simpson's Rule for a maximum of `N` subintervals.
+method applying Simpson's Rule over a maximum of `N` subintervals.
 
-The parameter `base` is a boolean value that controls when the 
-program initializes and when it fails. It should always be set to `true`
+The parameter `base` is a boolean value that tracks the initial call 
+of the method and controls when it fails. It should always be set to `true`
 when being called by the user.
 
 # Examples
+The method can obtain reasonably accurate results with very few subintervals.
+The true value of the integral in the example below accurate to 20 decimal
+places is 0.16060279414278839202:
+```jldoctest
+julia> f(x) = x^2 * exp(-x)
+f (generic function with 1 method)
 
+julia> adaptivequad(f, 0, 1, 1e-5, 10)
+
+Subintervals required: 3
+0.16060529683648378
+```
+However, the number of required calculations grows quickly when very high
+precision is required:
+```jldoctest
+julia> adaptivequad(f, 0, 1, 1e-17, 5000)
+
+Subintervals required: 3186
+0.16060279414278839
+```
 
 See also [`gaussianquad`](@ref)
 """
@@ -126,7 +145,7 @@ function adaptivequad(f, a, b, tol, N, base=true)
             end
         else
             if base
-                println("\nI = ", left + right, "\nSubintervals required: ", n)
+                println("\nSubintervals required: ", n)
                 return left + right
             else
                 return left + right
@@ -161,7 +180,7 @@ of width `h = (b - a)/sub`.
 # Examples
 Even with a very low order `n` we can still produce accurate results.
 The true value of the integral estimated below to 9 decimal places 
-is 0.804776489.
+is 0.804776489:
 ```jldoctest
 julia> f(x) = sin(x^2)
 f (generic function with 1 method)
