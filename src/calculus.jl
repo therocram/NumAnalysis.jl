@@ -99,7 +99,7 @@ Subintervals required: 3186
 0.16060279414278839
 ```
 
-See also [`gaussianquad`](@ref)
+See also [`gaussianquad`](@ref), [`adaptivegaussquad`](@ref)
 """
 function adaptivequad(f, a, b, tol, N, base=true)
     # Initializes subinterval tracking variable "n" at base iteration
@@ -156,8 +156,8 @@ end
 
 
 """
-    gaussianquad(f, a, b, n; sub = 1)
-
+    gaussianquad(f, a, b, n; sub=1, nwlist=nothing, checklist=true)
+    
 Approximates the integral 
 
 ```math
@@ -165,7 +165,9 @@ Approximates the integral
 ```
 
 using a `n` order Gaussian quadrature approximation on `sub`
-subintervals.
+subintervals. The quadrature nodes and weights are optionally
+provided as a size 2 tuple of Vectors or Vector of Vectors with
+`nwlist`.
 
 By default, the Gaussian quadrature nodes are spread over the
 given interval (`a`,`b`), meaning that the error of the approximation
@@ -194,12 +196,34 @@ julia> gaussianquad(f, 0, 2, 4, sub=4)
 0.8047764537878016
 ```
 
-See also [`adaptivequad`](@ref)
+See also [`adaptivequad`](@ref), [`adaptivegaussquad`](@ref)
 """
-function gaussianquad(f, a, b, n; sub=1)
+function gaussianquad(f, a, b, n; sub=1, nwlist=nothing, checklist=true)
     # Use FastGaussQuadrature package to very quickly obtain nodes and weights
     # of Legendre polynomial expansion
-    nodes, weights = FastGaussQuadrature.gausslegendre(n)
+    # Allows optional passing of nodes and weights for more efficient repeated calls
+    if nwlist === nothing
+        nodes, weights = FastGaussQuadrature.gausslegendre(n)
+    # Ensures that the passed list of quadrature nodes and weights is either a Tuple of 2 Vectors
+    # or a Vector of 2 Vectors. This check is skipped if checklist=false
+    elseif !checklist
+        nodes, weights = nwlist
+    elseif isa(nwlist, Tuple{Vector,Vector}) || 
+                ( isa(nwlist, Vector{Vector{Float64}}) && size(nwlist)[1] == 2 )
+        
+        nodes, weights = nwlist
+
+        # There must be an equal number of quadrature nodes and weights
+        if size(nodes) != size(weights)
+            return @error("The passed lists of quadrature nodes and weights are of different sizes", nwlist)
+        # The number of nodes and weights must match the order of the approximation
+        elseif size(nodes)[1] != n
+            return @error("The passed lists of quadrature nodes and weights must be of size n", n, nwlist)
+        end
+    else
+        return @error("The passed list of quadrature nodes and weights must be of type Tuple{Vector,Vector} or 
+        a Vector{Vector{Float64}} with a size of 2", nwlist)
+    end
 
     # Divide region of integration into "sub" number of equally spaced
     # subintervals
@@ -226,4 +250,98 @@ function gaussianquad(f, a, b, n; sub=1)
     end
 
     return sum
+end
+
+"""
+    adaptivegaussquad(f, a, b, n, tol, submax, base=true)
+
+Approximates the integral 
+
+```math
+\\int_{a}^{b} f(x) dx 
+```
+
+within a given tolerance `tol` using a recursive adaptive quadrature 
+method applying order `n` Gaussian Quadrature approximations (see [`gaussianquad`](@ref)) 
+over a maximum of `submax` subintervals.
+
+The parameter `base` is a boolean value that tracks the initial call 
+of the method and controls when it fails. It should always be set to `true`
+when being called by the user.
+
+# Examples
+Even for small values of `n` this method can obtain highly accurate results with
+fewer subintervals than the Simpson's Rule analogue (see [`adaptivequad`](@ref)).
+The true value of the integral in the example below accurate to 20 decimal
+places is 0.16060279414278839202:
+```jldoctest
+julia> f(x) = x^2 * exp(-x)
+f (generic function with 1 method)
+
+julia> adaptivegaussquad(f, 0, 1, 2, 1e-17, 3000)
+
+Subintervals required: 2574
+0.16060279414278839
+```
+The number of required subintervals drastically decreases for even slightly larger
+values of `n`:
+```jldoctest
+julia> adaptivegaussquad(f, 0, 1, 4, 1e-17, 10)
+
+Subintervals required: 9
+0.16060279414278839
+```
+
+See also [`gaussianquad`](@ref), [`adaptivequad`](@ref)
+"""
+function adaptivegaussquad(f, a, b, n, tol, submax, base=true)
+    # Initializes crucial tracking variables and constants at base iteration
+    if base 
+        # Subinterval tracking variable
+        global subnum = 1
+        # Constant used to approximate the error of each quadrature approximation
+        global errormod = floor( (2/3)*(2^(2*n) - 1) )
+        # List of untransformed gaussian quadrature nodes and weights
+        global NWLIST = 
+            FastGaussQuadrature.gausslegendre(n)::Tuple{Vector{Float64},Vector{Float64}}
+    end
+
+    # Fail condition
+    if subnum::Int64 > submax
+        return nothing
+    end
+
+    # Approximates I with sub=1 and sub=2 nth order Gaussian Quadrature calculations
+    G = gaussianquad(f, a, b, n, nwlist=NWLIST, checklist=false)
+    G2 = gaussianquad(f, a, b, n, sub=2, nwlist=NWLIST, checklist=false)
+
+    # Recursively apply method to left and right subintervals when 
+    # approximations do not meet a defined tolerance
+    if abs(G2 - G) < errormod*tol
+        if base println("\nI = ", G2, "\nSubintervals required: ", subnum) end
+        return G2
+    else
+        global subnum += 1
+        mid = (a + b)/2
+
+        left = adaptivegaussquad(f, a, mid, n, tol/2, submax, false)
+        right = adaptivegaussquad(f, mid, b, n, tol/2, submax, false)
+
+        # Neatly fail the method if the number of subintervals exceeds
+        # the allowed maximum and return a proper value otherwise. 
+        if left === nothing || right === nothing
+            if base
+                return @error("Method failed: exceeded max subintervals", submax)
+            else
+                return nothing
+            end
+        else
+            if base
+                println("\nSubintervals required: ", subnum)
+                return left + right
+            else
+                return left + right
+            end
+        end
+    end
 end

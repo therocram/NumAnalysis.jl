@@ -7,7 +7,8 @@ include("calculus.jl")
 export simpson,
        trapezoid,
        adaptivequad,
-       gaussianquad
+       gaussianquad,
+       adaptivegaussquad
 
 include("direct_lin_algebra.jl")
 export gaussbacksub,
@@ -51,10 +52,10 @@ export gaussjordanelim,
        buildtridiag,
        IMatrix,
        typecheckfloat,
-       swaprow,
-       swapcol,
-       addrow,
-       reducecol,
+       swaprow!,
+       swapcol!,
+       addrow!,
+       reducecol!,
        augmentmatrix,
        forwardsub,
        backsub,

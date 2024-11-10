@@ -75,11 +75,11 @@ function gausspivotpartial(A)
         if k == 0
             return @error("No unique solution exists", A) 
         elseif k != i
-            swaprow(A, i, k) # Swap rows as necessary
+            swaprow!(A, i, k) # Swap rows as necessary
         end
 
         # Eliminate column elements beneath A_ii
-        reducecol(A, i)
+        reducecol!(A, i)
 
     end
 
@@ -130,12 +130,12 @@ function gausspivotscaled(A)
         if k == 0
             return @error("No unique solution exists", A) 
         elseif k != i
-            swaprow(A, i, k)
+            swaprow!(A, i, k)
             s[i], s[k] = s[k], s[i]
         end
 
         # Eliminate column elements beneath A_ii
-        reducecol(A, i)
+        reducecol!(A, i)
     end
 
     return backsub(A)
@@ -234,12 +234,12 @@ function matrixfactorPtLU(A)
         if k == 0
             return @error("factorization is impossible.", U)
         elseif k != i
-            swaprow(U, i, k) # Swap rows as necessary
-            swaprow(P, i, k) # Any swap done with U must also be done with P
+            swaprow!(U, i, k) # Swap rows as necessary
+            swaprow!(P, i, k) # Any swap done with U must also be done with P
         end
 
         # Eliminate column elements beneath U_ii
-        reducecol(U, i)
+        reducecol!(U, i)
     end
 
     PA = P*A
@@ -250,7 +250,7 @@ function matrixfactorPtLU(A)
         for j in i+1:N
             w = PA[j,i]/PA[i,i]
             L[j,i] = w
-            addrow(PA, j, i, -w)
+            addrow!(PA, j, i, -w)
         end
     end
 

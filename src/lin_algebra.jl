@@ -9,7 +9,7 @@
 #######################################################################
 
 # Perform gauss jordan elimination on matrix "A"
-# NOTE: If checktype = "false" method will permute "A"
+# NOTE: If checktype = "false" method will mutate "A"
 function gaussjordanelim(A, checktype = true)
     # If a matrix of integers is passed to this function it is
     # often necessary to convert it to a matrix of floating
@@ -36,11 +36,11 @@ function gaussjordanelim(A, checktype = true)
         if k == 0
             return @error("Input matrix \"A\" is singular.")
         elseif k != i
-            swaprow(A, i, k) # Swap rows as necessary
+            swaprow!(A, i, k) # Swap rows as necessary
         end
 
         # Eliminate column elements beneath A_ii
-        reducecol(A, i)
+        reducecol!(A, i)
     end
 
     return A
@@ -65,7 +65,7 @@ function isposdef(A)
         if A[i,i] <= 0
             return false
         end
-        reducecol(A, i)
+        reducecol!(A, i)
     end
 
     return true
@@ -150,14 +150,14 @@ function typecheckfloat(A)
 end
 
 # Swaps rows "n" and "m" of the matrix "A"
-function swaprow(A, n, m)
+function swaprow!(A, n, m)
     for i in 1:size(A)[2]
         A[n,i], A[m,i] = A[m,i], A[n,i]
     end
 end
 
 # Swaps columns "n" and "m" of the matrix "A"
-function swapcol(A, n, m)
+function swapcol!(A, n, m)
     for i in 1:size(A)[1]
         A[i,n], A[i,m] = A[i,m], A[i,n]
     end
@@ -166,7 +166,7 @@ end
 # Performs the row operation:
 #   (n + w*m) -> n
 # on the matrix "A"
-function addrow(A, n, m, w)
+function addrow!(A, n, m, w)
     for i in 1:size(A)[2]
         A[n,i] = A[n,i] + w*A[m,i]
     end
@@ -175,9 +175,9 @@ end
 # Eliminates the column elements beneath A_ii (the diagonal)
 # NOTE: Assumes that column has been properly pivoted/scaled
 # as desired
-function reducecol(A, i)
+function reducecol!(A, i)
     for j in i+1:size(A)[1]
-        addrow(A, j, i, -A[j,i]/A[i,i])
+        addrow!(A, j, i, -A[j,i]/A[i,i])
     end
 end
 
