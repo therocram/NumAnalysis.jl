@@ -7,13 +7,49 @@
 # Last Modified: 4/2/2022 (MM/DD/YYYY)
 #########################################################
 
-# Composite Simpson's Rule.
-# Approximates the integral I = Int(f(x), a < x < b) using
-# Simpson's Rule on "n" subintervals.
-#
-# NOTE: Using this function with n=2 is equivalent to performing
-# a single Simpson's Rule approximation over [a,b]
-function simpson(f::Function, a, b, n)
+"""
+    simpson(f::Function, a, b, n=2)
+
+Approximates the integral 
+
+```math
+\\int_{a}^{b} f(x) dx 
+```
+
+using a composite Simpson's Rule over `n` subintervals. Using this
+method with `n = 2` is equivalent to performing a single Simpson's
+Rule approximation over [`a`,`b`].
+
+# Examples
+The true value of the integral in the example below accurate to 16
+decimal places is 0.3386826421694169:
+```jldoctest
+julia> f(x) = x^3 * cosh(x)
+f (generic function with 1 method)
+
+julia> simpson(f, 0, 1, 2)
+0.35114893623640564
+```
+
+In general, increasing `n` increases the accuracy of the approximation
+as long as `n` is even:
+```jldoctest
+julia> simpson(f, 0, 1, 10)
+0.33870448867643016
+```
+
+The method will not give accurate results for odd `n` and will warn the
+user automatically if the inputted `n` is odd:
+```jldoctest
+julia> simpson(f, 0, 1, 7)
+┌ Warning: Method will not give accurate results for odd n
+└ @ NumAnalysis ~/NumAnalysis.jl/src/calculus.jl:40
+0.2847753864365918
+```
+
+See also [`adaptivequad`](@ref), [`gaussianquad`](@ref)
+"""
+function simpson(f::Function, a, b, n=2)
     # Give warning if n is not even
     if n % 2 != 0
         @warn("Method will not give accurate results for odd n")
@@ -37,13 +73,39 @@ function simpson(f::Function, a, b, n)
     return (h/3)*(y0 + 2*y2 + 4*y1)
 end
 
-# Composite Trapezoidal Rule.
-# Approximates the integral I = Int(f(x), a < x < b) using
-# the Trapezoidal Rule on "n" subintervals.
-#
-# NOTE: Using this function with n=1 is equivalent to performing
-# a single Trapezoidal Rule approximation over [a,b]
-function trapezoid(f, a, b, n)
+"""
+    trapezoid(f::Function, a, b, n=1)
+
+Approximates the integral 
+
+```math
+\\int_{a}^{b} f(x) dx 
+```
+
+using a composite Trapezoidal Rule over `n` subintervals. Using this
+method with `n = 1` is equivalent to performing a single Trapezoidal
+Rule approximation over [`a`,`b`].
+
+# Examples
+The true value of the integral in the example below accurate to 16
+decimal places is 0.3386826421694169:
+```jldoctest
+julia> f(x) = x^3 * cosh(x)
+f (generic function with 1 method)
+
+julia> trapezoid(f, 0, 1, 1)
+0.7715403174076219
+```
+
+In general, increasing `n` increases the accuracy of the approximation:
+```jldoctest
+julia> trapezoid(f, 0, 1, 10)
+0.34351419965225494
+```
+
+See also [`simpson`](@ref), [`gaussianquad`](@ref)
+"""
+function trapezoid(f::Function, a, b, n=1)
     h = (b - a)/n
 
     y0 = f(a) + f(b)
@@ -71,7 +133,7 @@ Approximates the integral
 ```
 
 within a given tolerance `tol` using a recursive adaptive quadrature 
-method applying Simpson's Rule over a maximum of `N` subintervals.
+method applying Simpson's Rule (see [`simpson`](@ref)) over a maximum of `N` subintervals.
 
 The parameter `base` is a boolean value that tracks the initial call 
 of the method and controls when it fails. It should always be set to `true`
@@ -99,7 +161,7 @@ Subintervals required: 3186
 0.16060279414278839
 ```
 
-See also [`gaussianquad`](@ref), [`adaptivegaussquad`](@ref)
+See also [`simpson`](@ref), [`adaptivegaussquad`](@ref)
 """
 function adaptivequad(f, a, b, tol, N, base=true)
     # Initializes subinterval tracking variable "n" at base iteration
@@ -119,6 +181,9 @@ function adaptivequad(f, a, b, tol, N, base=true)
     # Recursively apply method to left and right subintervals when 
     # approximations do not meet a defined tolerance
     if abs(S - S4) < 10*tol
+        #
+        #
+        #                  v ?
         if base println("\nI = ", S4, "\nSubintervals required: ", n) end
         return S4
     else
@@ -145,7 +210,7 @@ function adaptivequad(f, a, b, tol, N, base=true)
             end
         else
             if base
-                println("\nSubintervals required: ", n)
+                println("\nI = ", S4, "\nSubintervals required: ", n)
                 return left + right
             else
                 return left + right
@@ -167,7 +232,11 @@ Approximates the integral
 using a `n` order Gaussian quadrature approximation on `sub`
 subintervals. The quadrature nodes and weights are optionally
 provided as a size 2 tuple of Vectors or Vector of Vectors with
-`nwlist`.
+`nwlist`. 
+
+By default, the method will check `nwlist` to make sure
+it has appropriate type and size. These safety checks can be skipped
+by setting `checklist = false`.
 
 By default, the Gaussian quadrature nodes are spread over the
 given interval (`a`,`b`), meaning that the error of the approximation
@@ -201,13 +270,13 @@ See also [`adaptivequad`](@ref), [`adaptivegaussquad`](@ref)
 function gaussianquad(f, a, b, n; sub=1, nwlist=nothing, checklist=true)
     # Use FastGaussQuadrature package to very quickly obtain nodes and weights
     # of Legendre polynomial expansion
-    # Allows optional passing of nodes and weights for more efficient repeated calls
     if nwlist === nothing
         nodes, weights = FastGaussQuadrature.gausslegendre(n)
-    # Ensures that the passed list of quadrature nodes and weights is either a Tuple of 2 Vectors
-    # or a Vector of 2 Vectors. This check is skipped if checklist=false
+    # Allows optional passing of nodes and weights for more efficient repeated calls
     elseif !checklist
         nodes, weights = nwlist
+    # Ensures that the passed list of quadrature nodes and weights is either a Tuple of 2 Vectors
+    # or a Vector of 2 Vectors. This check is skipped if checklist=false
     elseif isa(nwlist, Tuple{Vector,Vector}) || 
                 ( isa(nwlist, Vector{Vector{Float64}}) && size(nwlist)[1] == 2 )
         
@@ -337,7 +406,7 @@ function adaptivegaussquad(f, a, b, n, tol, submax, base=true)
             end
         else
             if base
-                println("\nSubintervals required: ", subnum)
+                println("\nI = ", G2, "\nSubintervals required: ", subnum)
                 return left + right
             else
                 return left + right
