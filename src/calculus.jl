@@ -23,9 +23,8 @@ Rule approximation over [`a`,`b`].
 # Examples
 The true value of the integral in the example below accurate to 16
 decimal places is 0.3386826421694169:
-```jldoctest
-julia> f(x) = x^3 * cosh(x)
-f (generic function with 1 method)
+```jldoctest simpson
+julia> f(x) = x^3 * cosh(x);
 
 julia> simpson(f, 0, 1, 2)
 0.35114893623640564
@@ -33,21 +32,21 @@ julia> simpson(f, 0, 1, 2)
 
 In general, increasing `n` increases the accuracy of the approximation
 as long as `n` is even:
-```jldoctest
+```jldoctest simpson
 julia> simpson(f, 0, 1, 10)
 0.33870448867643016
 ```
 
 The method will not give accurate results for odd `n` and will warn the
 user automatically if the inputted `n` is odd:
-```jldoctest
+```jldoctest simpson
 julia> simpson(f, 0, 1, 7)
 ┌ Warning: Method will not give accurate results for odd n
-└ @ NumAnalysis ~/NumAnalysis.jl/src/calculus.jl:40
+└ @ NumAnalysis ~/NumAnalysis.jl/src/calculus.jl:54
 0.2847753864365918
 ```
 
-See also [`adaptivequad`](@ref), [`gaussianquad`](@ref)
+See also [`adaptivequad`](@ref), [`trapezoid`](@ref), [`gaussianquad`](@ref)
 """
 function simpson(f::Function, a, b, n=2)
     # Give warning if n is not even
@@ -89,16 +88,15 @@ Rule approximation over [`a`,`b`].
 # Examples
 The true value of the integral in the example below accurate to 16
 decimal places is 0.3386826421694169:
-```jldoctest
-julia> f(x) = x^3 * cosh(x)
-f (generic function with 1 method)
+```jldoctest trapezoid
+julia> f(x) = x^3 * cosh(x);
 
 julia> trapezoid(f, 0, 1, 1)
 0.7715403174076219
 ```
 
 In general, increasing `n` increases the accuracy of the approximation:
-```jldoctest
+```jldoctest trapezoid
 julia> trapezoid(f, 0, 1, 10)
 0.34351419965225494
 ```
@@ -143,9 +141,8 @@ when being called by the user.
 The method can obtain reasonably accurate results with very few subintervals.
 The true value of the integral in the example below accurate to 20 decimal
 places is 0.16060279414278839202:
-```jldoctest
-julia> f(x) = x^2 * exp(-x)
-f (generic function with 1 method)
+```jldoctest adaptivequad
+julia> f(x) = x^2 * exp(-x);
 
 julia> adaptivequad(f, 0, 1, 1e-5, 10)
 
@@ -154,7 +151,7 @@ Subintervals required: 3
 ```
 However, the number of required calculations grows quickly when very high
 precision is required:
-```jldoctest
+```jldoctest adaptivequad
 julia> adaptivequad(f, 0, 1, 1e-17, 5000)
 
 Subintervals required: 3186
@@ -181,10 +178,7 @@ function adaptivequad(f, a, b, tol, N, base=true)
     # Recursively apply method to left and right subintervals when 
     # approximations do not meet a defined tolerance
     if abs(S - S4) < 10*tol
-        #
-        #
-        #                  v ?
-        if base println("\nI = ", S4, "\nSubintervals required: ", n) end
+        if base println("\nSubintervals required: ", n) end
         return S4
     else
         global n += 1
@@ -210,7 +204,7 @@ function adaptivequad(f, a, b, tol, N, base=true)
             end
         else
             if base
-                println("\nI = ", S4, "\nSubintervals required: ", n)
+                println("\nSubintervals required: ", n)
                 return left + right
             else
                 return left + right
@@ -252,15 +246,14 @@ of width `h = (b - a)/sub`.
 Even with a very low order `n` we can still produce accurate results.
 The true value of the integral estimated below to 9 decimal places 
 is 0.804776489:
-```jldoctest
-julia> f(x) = sin(x^2)
-f (generic function with 1 method)
+```jldoctest gaussianquad
+julia> f(x) = sin(x^2);
 
 julia> gaussianquad(f, 0, 2, 5)
 0.8048689412592385
 ```
 Accuracy can be further improved by making use of subintervals:
-```jldoctest
+```jldoctest gaussianquad
 julia> gaussianquad(f, 0, 2, 4, sub=4)
 0.8047764537878016
 ```
@@ -343,9 +336,8 @@ Even for small values of `n` this method can obtain highly accurate results with
 fewer subintervals than the Simpson's Rule analogue (see [`adaptivequad`](@ref)).
 The true value of the integral in the example below accurate to 20 decimal
 places is 0.16060279414278839202:
-```jldoctest
-julia> f(x) = x^2 * exp(-x)
-f (generic function with 1 method)
+```jldoctest adapgauss
+julia> f(x) = x^2 * exp(-x);
 
 julia> adaptivegaussquad(f, 0, 1, 2, 1e-17, 3000)
 
@@ -354,7 +346,7 @@ Subintervals required: 2574
 ```
 The number of required subintervals drastically decreases for even slightly larger
 values of `n`:
-```jldoctest
+```jldoctest adapgauss
 julia> adaptivegaussquad(f, 0, 1, 4, 1e-17, 10)
 
 Subintervals required: 9
@@ -387,7 +379,7 @@ function adaptivegaussquad(f, a, b, n, tol, submax, base=true)
     # Recursively apply method to left and right subintervals when 
     # approximations do not meet a defined tolerance
     if abs(G2 - G) < errormod*tol
-        if base println("\nI = ", G2, "\nSubintervals required: ", subnum) end
+        if base println("\nSubintervals required: ", subnum) end
         return G2
     else
         global subnum += 1
@@ -406,7 +398,7 @@ function adaptivegaussquad(f, a, b, n, tol, submax, base=true)
             end
         else
             if base
-                println("\nI = ", G2, "\nSubintervals required: ", subnum)
+                println("\nSubintervals required: ", subnum)
                 return left + right
             else
                 return left + right

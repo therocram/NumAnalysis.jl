@@ -385,12 +385,12 @@ end
 # plot(xGrid, yVals, xlims=(0,14), ylims=(-6,4))
 # plot!(duckx, duckf, seriestype = :scatter)
 
-"""
-    fft(y)
+# """
+#     fft(y)
 
-Started FFT implementation
-y - input function values
-"""
+# Started FFT implementation
+# y - input function values
+# """
 function fft(y)
 end
 

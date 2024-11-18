@@ -12,7 +12,14 @@
 # Implements the bisection method on the interval [a,b]
 # to approximate the root of a function "f" within some tolerance
 # "tol" for a maximum of "N" iterations.
-function bisecmethod(f, a, b, tol, N)
+"""
+    bisecmethod(f::Function, a, b, tol, N)
+
+Uses the Bisection Method to approximate the root of a single-variable 
+function `f` on the interval [`a`,`b`] within the set tolerance `tol`
+for a maximum of `N` iterations.
+"""
+function bisecmethod(f::Function, a, b, tol, N)
     # Checks for roots at the endpoints of [a,b]
     if f(a) == 0
         return a

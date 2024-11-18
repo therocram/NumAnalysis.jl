@@ -86,7 +86,7 @@ The function returns a tuple of the form `(t, w)`, where `t` and `w` are Vectors
 independent and dependent variable values in the solution set, respectively. By default, 
 the Runge-Kutta method of order 4 (RKO4) is used:
 
-```jldoctest
+```jldoctest ivpsolve
 julia> f(t,y) = -2t*y
 f (generic function with 1 method)
 
@@ -98,7 +98,7 @@ The user can optionally have the method print the results of each step of the so
 setting `printres = true`. Note that in the example below the actual function output is suppressed
 by the `;`:
 
-```jldoctest
+```jldoctest ivpsolve
 julia> ivpsolve(f, 0, 1, 1, 5, printres=true);
 i   t_i        w_i
 0   0.000000   1.000000
@@ -112,7 +112,7 @@ i   t_i        w_i
 Providing the true solution `y` will automatically print the results of each step along
 with the true error of the approximation at each step:
 
-```jldoctest
+```jldoctest ivpsolve
 julia> y(t) = exp(-t^2)
 y (generic function with 1 method)
 
@@ -130,7 +130,7 @@ In addition to RKO4 there are two other single-step solver methods (Euler's meth
 the Midpoint/Runge-Kutta Order 2 method). Out of the three, ROK4 will generally be the most
 accurate. Using Euler's Method, for example, will almost always give far less accurate results:
 
-```jldoctest
+```jldoctest ivpsolve
 julia> ivpsolve(f, 0, 1, 1, 5, solver=euler, y=y);
 i   t_i        w_i        |y(t_i) - w_i|
 0   0.000000   1.000000   0.000000

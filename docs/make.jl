@@ -1,7 +1,19 @@
 # include("../src/NumAnalysis.jl")
 # using Documenter, .NumAnalysis
 
-# At some point use
 using Documenter, NumAnalysis
 
-makedocs(sitename="NumAnalysis.jl")
+DocMeta.setdocmeta!(NumAnalysis, :DocTestSetup, :(using NumAnalysis))
+
+makedocs(
+    modules = [NumAnalysis],
+
+    pages = [
+        "Home" => "index.md",
+        "Numerical Integration" => "numintegration.md",
+        "Initial Value Problems" => "initvalode.md",
+        "Root Finder" => "rootfinder.md"
+    ],
+
+    sitename="NumAnalysis.jl"
+)
